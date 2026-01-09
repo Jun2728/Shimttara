@@ -1,0 +1,563 @@
+/* =====================================================
+   쉼따라 (SDL) – Senior-friendly UI + Tailwind 감성 CSS (최종본/정리)
+   - 구조 유지: 좌측 패널 + 우측 지도
+   - 시니어 친화(큰 글자/터치영역)
+   - 글래스/그라데이션/소프트 섀도우/포커스 링
+   - Pretendard 적용
+===================================================== */
+
+/* =====================
+   디자인 토큰
+===================== */
+:root{
+  --brand:#22C55E;                 /* emerald-500 */
+  --brand-2:#16A34A;               /* emerald-600 */
+  --bg:#F8FAFC;                    /* slate-50 */
+  --text:#0F172A;                  /* slate-900 */
+  --muted:#64748B;                 /* slate-500 */
+  --muted-2:#94A3B8;               /* slate-400 */
+
+  --card:rgba(255,255,255,.78);    /* glass */
+  --card-solid:#FFFFFF;
+  --border:rgba(15,23,42,.10);     /* slate-900 / 10% */
+  --border-2:rgba(255,255,255,.35);
+  --divider:rgba(15,23,42,.08);
+
+  --shadow-sm:0 10px 25px -5px rgba(0,0,0,.05), 0 8px 10px -6px rgba(0,0,0,.05);
+  --shadow-md:0 18px 40px rgba(15,23,42,.12);
+  --shadow-lg:0 22px 60px rgba(15,23,42,.16);
+
+  --radius-xl:1.5rem;              /* 24px */
+  --radius-lg:1rem;                /* 16px */
+  --radius-md:.875rem;             /* 14px */
+  --radius-pill:999px;
+
+  --ring:0 0 0 4px rgba(34,197,94,.22);
+
+  --tap:transparent;
+}
+
+/* (선택) 다크 모드 토큰: html.dark 토글 시 */
+html.dark{
+  --bg:#020617;                    /* slate-950 */
+  --text:#E2E8F0;                  /* slate-200 */
+  --muted:#94A3B8;                 /* slate-400 */
+  --muted-2:#64748B;               /* slate-500 */
+
+  --card:rgba(15,23,42,.64);
+  --card-solid:#0B1220;
+  --border:rgba(255,255,255,.12);
+  --border-2:rgba(255,255,255,.14);
+  --divider:rgba(255,255,255,.12);
+
+  --shadow-sm:0 10px 25px -5px rgba(0,0,0,.35), 0 8px 10px -6px rgba(0,0,0,.35);
+  --shadow-md:0 18px 44px rgba(0,0,0,.40);
+  --shadow-lg:0 26px 70px rgba(0,0,0,.45);
+
+  --ring:0 0 0 4px rgba(16,185,129,.24);
+}
+
+/* =====================
+   리셋/기본
+===================== */
+html, body{
+  height:100%;
+  margin:0;
+}
+html{
+  font-size:18px; /* 시니어 친화 체급 */
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+*{
+  box-sizing:border-box;
+  font-family:"Pretendard", system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+}
+button, input{
+  -webkit-tap-highlight-color:var(--tap);
+}
+
+/* =====================
+   배경 블롭(앱 느낌)
+===================== */
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  width:42vmax;
+  height:42vmax;
+  border-radius:999px;
+  filter:blur(120px);
+  z-index:-1;
+  opacity:.22;
+  pointer-events:none;
+}
+body::before{
+  left:-12vmax;
+  top:-12vmax;
+  background:rgba(34,197,94,.55);
+}
+body::after{
+  right:-12vmax;
+  bottom:-12vmax;
+  background:rgba(59,130,246,.55);
+}
+html.dark body::before{ opacity:.18; }
+html.dark body::after{ opacity:.18; }
+
+/* =====================
+   전체 레이아웃
+===================== */
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:12px;
+  padding:12px;
+}
+
+/* =====================
+   좌측 패널 (Glass Card)
+===================== */
+.panel{
+  background:var(--card);
+  border:1px solid var(--border-2);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-md);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  padding:18px 16px;
+
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+
+  min-height:0;
+  overflow:auto; /* 항목 늘어날 때 안전 */
+}
+
+.panel__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--divider);
+}
+
+.title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:-.4px;
+}
+
+/* (선택) 작은 앱 아이콘 */
+.appMark{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+
+  background: url("./Shimttara.png") no-repeat center / cover;
+  /* 또는 / contain (여백 유지하고 싶으면) */
+
+  box-shadow:0 8px 16px rgba(0,0,0,.18);
+  flex-shrink:0;
+}
+
+
+/* 섹션 */
+.panel__section{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* 라벨 */
+.label{
+  font-size:13px;
+  font-weight:900;
+  color:rgba(15,23,42,.70);
+  letter-spacing:-.2px;
+}
+html.dark .label{
+  color:rgba(226,232,240,.78);
+}
+
+/* =====================
+   입력
+===================== */
+.row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.input{
+  width:100%;
+  height:52px;
+  padding:0 14px;
+  border-radius:var(--radius-lg);
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.92);
+  font-size:16px;
+  font-weight:700;
+  color:var(--text);
+  outline:none;
+  box-shadow:0 10px 20px rgba(15,23,42,.04);
+  transition:box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+html.dark .input{
+  background:rgba(2,6,23,.32);
+  border-color:var(--border);
+  box-shadow:0 12px 22px rgba(0,0,0,.18);
+}
+.input::placeholder{
+  color:var(--muted-2);
+  font-weight:700;
+}
+.input:focus{
+  border-color:rgba(34,197,94,.55);
+  box-shadow:var(--ring), 0 14px 26px rgba(15,23,42,.10);
+  background:#fff;
+}
+html.dark .input:focus{
+  background:rgba(2,6,23,.40);
+  box-shadow:var(--ring), 0 18px 34px rgba(0,0,0,.30);
+}
+
+/* =====================
+   공통 인터랙션
+===================== */
+.btn,
+.place-btn,
+.near-btn,
+.layer-btn{
+  cursor:pointer;
+  transition:
+    transform .06s ease,
+    box-shadow .15s ease,
+    border-color .15s ease,
+    background .15s ease,
+    filter .15s ease;
+}
+.btn:active,
+.place-btn:active,
+.near-btn:active,
+.layer-btn:active{
+  transform:translateY(1px);
+}
+.btn:focus-visible,
+.place-btn:focus-visible,
+.near-btn:focus-visible,
+.layer-btn:focus-visible,
+.input:focus-visible{
+  outline:none;
+  box-shadow:var(--ring);
+}
+
+/* =====================
+   상단 액션 버튼
+===================== */
+.btn{
+  height:52px;
+  border-radius:var(--radius-lg);
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.92);
+  font-size:16px;
+  font-weight:900;
+  color:rgba(15,23,42,.86);
+  box-shadow:var(--shadow-sm);
+}
+html.dark .btn{
+  background:rgba(2,6,23,.32);
+  color:rgba(226,232,240,.90);
+  border-color:var(--border);
+}
+
+.btn--primary{
+  border:0;
+  color:#fff;
+
+  /* 🔴 핵심: gradient 완전 제거 */
+  background: #1fc7a2 !important;
+  background-image: none !important;
+
+  box-shadow:
+    0 18px 34px rgba(31,199,162,.30),
+    0 12px 22px rgba(15,23,42,.12);
+}
+
+/* hover 시에도 색 안 흔들리게 */
+.btn--primary:hover{
+  filter:none;
+  background:#1fc7a2;
+}
+
+/* 눌렀을 때 */
+.btn--primary:active{
+  background:#19b090;
+}
+
+
+.btn--ghost{
+  background:rgba(255,255,255,.78);
+}
+html.dark .btn--ghost{
+  background:rgba(2,6,23,.26);
+}
+.btn--ghost:hover{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(15,23,42,.16);
+}
+html.dark .btn--ghost:hover{
+  border-color:rgba(255,255,255,.22);
+  background:rgba(2,6,23,.34);
+}
+
+/* =====================
+   집/회사/내 위치 (Pill)
+===================== */
+.place-buttons{
+  display:flex;
+  gap:12px;
+  margin-top:6px;
+}
+.place-buttons.wrap{ flex-wrap:wrap; }
+
+.place-btn{
+  flex:1;
+  height:48px;
+  border-radius:var(--radius-pill);
+  border:1px solid rgba(15,23,42,.12);
+  background:rgba(255,255,255,.92);
+  font-size:15px;
+  font-weight:900;
+  color:rgba(15,23,42,.86);
+  box-shadow:0 10px 18px rgba(15,23,42,.05);
+}
+html.dark .place-btn{
+  background:rgba(2,6,23,.28);
+  border-color:var(--border);
+  color:rgba(226,232,240,.92);
+}
+.place-btn:hover{
+  border-color:rgba(34,197,94,.28);
+  box-shadow:0 14px 26px rgba(15,23,42,.10);
+}
+html.dark .place-btn:hover{
+  border-color:rgba(16,185,129,.35);
+  box-shadow:0 18px 34px rgba(0,0,0,.32);
+}
+.place-btn.active{
+  background:rgba(34,197,94,.10);
+  border-color:rgba(34,197,94,.55);
+  color:#166534;
+  box-shadow:var(--ring), 0 10px 18px rgba(15,23,42,.06);
+}
+html.dark .place-btn.active{
+  background:rgba(16,185,129,.16);
+  border-color:rgba(16,185,129,.45);
+  color:#A7F3D0;
+}
+
+/* =====================
+   근처 안내 (카드형)
+===================== */
+.near-buttons{
+  display:flex;
+  gap:12px;
+  margin-top:10px;
+}
+.near-btn{
+  flex:1;
+  height:86px;
+  border-radius:var(--radius-xl);
+  border:1px solid rgba(15,23,42,.12);
+  background:
+    radial-gradient(140px 90px at 18% 22%, rgba(34,197,94,.12) 0%, rgba(255,255,255,0) 65%),
+    rgba(255,255,255,.92);
+  box-shadow:0 10px 18px rgba(15,23,42,.06);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:10px 8px;
+}
+html.dark .near-btn{
+  background:
+    radial-gradient(140px 90px at 18% 22%, rgba(16,185,129,.20) 0%, rgba(255,255,255,0) 65%),
+    rgba(2,6,23,.28);
+  border-color:var(--border);
+}
+.near-btn:hover{
+  border-color:rgba(34,197,94,.28);
+  box-shadow:0 14px 26px rgba(15,23,42,.10);
+}
+html.dark .near-btn:hover{
+  border-color:rgba(16,185,129,.35);
+  box-shadow:0 18px 36px rgba(0,0,0,.32);
+}
+.near-btn__title{
+  font-size:15px;
+  font-weight:900;
+  color:rgba(15,23,42,.92);
+  line-height:1.1;
+  text-align:center;
+}
+html.dark .near-btn__title{ color:rgba(226,232,240,.94); }
+.near-btn__sub{
+  font-size:15px;
+  font-weight:800;
+  color:rgba(15,23,42,.92);
+  letter-spacing:-.2px;
+  line-height:1.1;
+  text-align:center;
+}
+html.dark .near-btn__sub{ color:rgba(0,0,0,.32); }
+
+/* (옵션) 아이콘+텍스트 래퍼를 쓰고 싶다면 */
+.near-btn__top{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+/* =====================
+   레이어 토글 (필터 버튼 느낌)
+===================== */
+.layer-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+.layer-btn{
+  height:46px;
+  border-radius:var(--radius-lg);
+  border:1px solid rgba(15,23,42,.12);
+  background:rgba(255,255,255,.92);
+  font-size:14px;
+  font-weight:900;
+  color:rgba(15,23,42,.86);
+  box-shadow:0 10px 18px rgba(15,23,42,.05);
+}
+html.dark .layer-btn{
+  background:rgba(2,6,23,.28);
+  border-color:var(--border);
+  color:rgba(226,232,240,.92);
+}
+.layer-btn:hover{
+  border-color:rgba(34,197,94,.28);
+  box-shadow:0 14px 26px rgba(15,23,42,.10);
+}
+html.dark .layer-btn:hover{
+  border-color:rgba(16,185,129,.35);
+  box-shadow:0 18px 36px rgba(0,0,0,.32);
+}
+.layer-btn.active{
+  background:rgba(34,197,94,.10);
+  border-color:rgba(34,197,94,.55);
+  color:#166534;
+  box-shadow:var(--ring), 0 10px 18px rgba(15,23,42,.06);
+}
+html.dark .layer-btn.active{
+  background:rgba(16,185,129,.16);
+  border-color:rgba(16,185,129,.45);
+  color:#A7F3D0;
+}
+
+/* =====================
+   지도 영역 (큰 카드)
+===================== */
+.mapWrap{
+  position:relative;
+  height:100%;
+  min-height:0;
+  border-radius:var(--radius-xl);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:var(--shadow-lg);
+  background:#fff;
+}
+html.dark .mapWrap{
+  border-color:rgba(255,255,255,.16);
+  background:#0B1220;
+}
+.map{
+  width:100%;
+  height:100%;
+}
+
+/* =====================
+   날씨 위젯 (HUD)
+===================== */
+.weatherWidget{
+  position:absolute;
+  top:18px;
+  left:18px;
+  display:none; /* JS에서 flex로 켜줌 */
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  border-radius:20px;
+  background:rgba(15,23,42,.78);
+  color:#fff;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 18px 40px rgba(0,0,0,.22);
+}
+.weatherIcon{ font-size:34px; }
+.weatherText{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:-.2px;
+}
+.modeBadge{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.22);
+  width:fit-content;
+}
+
+/* =====================
+   모바일 대응
+===================== */
+@media (max-width:900px){
+  .app{
+    grid-template-columns:1fr;
+    grid-template-rows:auto 1fr;
+    padding:10px;
+  }
+  .panel{
+    border-radius:var(--radius-xl);
+  }
+  .mapWrap{
+    min-height:240px;
+  }
+  .place-buttons{ gap:10px; }
+  .near-buttons{ gap:10px; }
+  .near-btn{ height:68px; }
+  .layer-btn{
+    height:44px;
+    font-size:13px;
+  }
+}
+
+/* =====================
+   모션 줄이기
+===================== */
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; }
+}
